@@ -1,0 +1,28 @@
+build
+
+#import compile as c
+#import array as arr
+#import mem
+#import str
+
+files :: []string { "main.rcp", "json.rcp" };
+
+compile :: fn() -> c.CompileInfo {
+    ga := mem.create_generic_allocator();
+    out := c.CompileInfo {
+        files = arr.create(string, &ga)
+    };
+
+    for f in files {
+        b := str.create(&ga);
+        str.append(&b, "../src/");
+        str.append(&b, f);
+        file := str.from_builder(&b, &ga);
+
+        arr.add(&out.files, file);
+    }
+
+    return out;
+}
+
+

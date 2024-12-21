@@ -1,0 +1,452 @@
+; ModuleID = 'main'
+source_filename = "main.rcp"
+target datalayout = "e-m:w-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-windows-msvc"
+
+%string = type { ptr, i64 }
+%slice.5 = type { i64, ptr }
+%mem.Allocator = type { ptr, ptr, ptr }
+%json.Value = type { i64, %json.ValueUnion }
+%json.ValueUnion = type { %string }
+%slice.7 = type { i64, ptr }
+%init.Arg = type { i64, ptr }
+
+@main.test_string = global %string zeroinitializer
+@init.INVALID_TYPE = external global i64
+@init.type_table = external global %slice.5
+@os.STD_INPUT_HANDLE = external global i32
+@os.STD_OUTPUT_HANDLE = external global i32
+@os.STD_ERROR_HANDLE = external global i32
+@os.INVALID_HANDLE_VALUE = external global ptr
+@os.CP_UTF7 = external global i32
+@os.CP_UTF8 = external global i32
+@os.MEM_COMMIT = external global i32
+@os.MEM_RESERVE = external global i32
+@os.MEM_RELEASE = external global i32
+@os.PAGE_NOACCESS = external global i32
+@os.PAGE_READONLY = external global i32
+@os.PAGE_READWRITE = external global i32
+@os.PAGE_WRITECOPY = external global i32
+@os.PAGE_EXECUTE = external global i32
+@os.PAGE_EXECUTE_READ = external global i32
+@os.PAGE_EXECUTE_READWRITE = external global i32
+@os.PAGE_EXECUTE_WRITECOPY = external global i32
+@os.PAGE_GUARD = external global i32
+@os.PAGE_NOCACHE = external global i32
+@os.PAGE_WRITECOMBINE = external global i32
+@str.CONTINUE_BIT = external global i8
+@0 = private unnamed_addr constant [45 x i8] c"{\0D\0A\09\22name\22 : 10,\0D\0A\09\22foo\22 : [10 , 30 ]\0D\0A}\0D\0A\0D\0A\00", align 1
+@1 = private unnamed_addr constant [4 x i8] c"foo\00", align 1
+@2 = private unnamed_addr constant [2 x i8] c"%\00", align 1
+@3 = private unnamed_addr constant [15 x i8] c"Expected array\00", align 1
+
+define void @main.__GlobalInitializerFunction.0() {
+block_0:
+  %0 = alloca %string, align 8
+  %String = getelementptr inbounds %string, ptr %0, i32 0, i32 0
+  %Size = getelementptr inbounds %string, ptr %0, i32 0, i32 1
+  store ptr @0, ptr %String, align 8
+  store i64 44, ptr %Size, align 8
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 @main.test_string, ptr align 8 %0, i64 16, i1 false)
+  ret void
+}
+
+define i32 @main.main() !dbg !82 {
+block_0:
+  %0 = alloca %mem.Allocator, align 8
+  %1 = alloca %mem.Allocator, align 8
+  %2 = alloca %json.Value, align 8
+  %3 = alloca %string, align 8
+  %4 = alloca %json.Value, align 8
+  %5 = alloca %json.Value, align 8
+  %6 = alloca %json.Value, align 8
+  %7 = alloca %string, align 8
+  %8 = alloca %json.Value, align 8
+  %9 = alloca %slice.7, align 8
+  %10 = alloca [1 x %init.Arg], align 8
+  %11 = alloca %string, align 8
+  %12 = alloca i64, align 8
+  %13 = alloca %string, align 8
+  call void @mem.create_generic_allocator(ptr %0), !dbg !87
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %1, ptr align 8 %0, i64 24, i1 false), !dbg !87
+  call void @llvm.dbg.declare(metadata ptr %1, metadata !88, metadata !DIExpression()), !dbg !87
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %3, ptr align 8 @main.test_string, i64 16, i1 false), !dbg !104
+  call void @json.parse(ptr %2, ptr %3, ptr %1), !dbg !104
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %4, ptr align 8 %2, i64 24, i1 false), !dbg !104
+  call void @llvm.dbg.declare(metadata ptr %4, metadata !105, metadata !DIExpression()), !dbg !104
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %6, ptr align 8 %4, i64 24, i1 false), !dbg !143
+  %14 = alloca %string, align 8, !dbg !143
+  %String = getelementptr inbounds %string, ptr %14, i32 0, i32 0, !dbg !143
+  %Size = getelementptr inbounds %string, ptr %14, i32 0, i32 1, !dbg !143
+  store ptr @1, ptr %String, align 8, !dbg !143
+  store i64 3, ptr %Size, align 8, !dbg !143
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %7, ptr align 8 %14, i64 16, i1 false), !dbg !143
+  call void @json.get_item(ptr %5, ptr %6, ptr %7), !dbg !143
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %8, ptr align 8 %5, i64 24, i1 false), !dbg !143
+  call void @llvm.dbg.declare(metadata ptr %8, metadata !144, metadata !DIExpression()), !dbg !143
+  %15 = getelementptr inbounds %slice.7, ptr %9, i32 0, i32 0, !dbg !145
+  %16 = getelementptr inbounds %slice.7, ptr %9, i32 0, i32 1, !dbg !145
+  store i64 1, ptr %15, align 8, !dbg !145
+  store ptr %10, ptr %16, align 8, !dbg !145
+  %17 = alloca %string, align 8, !dbg !145
+  %String1 = getelementptr inbounds %string, ptr %17, i32 0, i32 0, !dbg !145
+  %Size2 = getelementptr inbounds %string, ptr %17, i32 0, i32 1, !dbg !145
+  store ptr @2, ptr %String1, align 8, !dbg !145
+  store i64 1, ptr %Size2, align 8, !dbg !145
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %11, ptr align 8 %17, i64 16, i1 false), !dbg !145
+  %18 = getelementptr inbounds %json.Value, ptr %8, i32 0, i32 0, !dbg !145
+  %19 = load i64, ptr %18, align 8, !dbg !145
+  store i64 %19, ptr %12, align 8, !dbg !145
+  %20 = getelementptr [1 x %init.Arg], ptr %10, i64 0, i64 0, !dbg !145
+  %21 = getelementptr inbounds %init.Arg, ptr %20, i32 0, i32 0, !dbg !145
+  %22 = getelementptr inbounds %init.Arg, ptr %20, i32 0, i32 1, !dbg !145
+  store i64 241, ptr %21, align 8, !dbg !145
+  store ptr %12, ptr %22, align 8, !dbg !145
+  call void @io.println(ptr %11, ptr %9), !dbg !145
+  %23 = getelementptr inbounds %json.Value, ptr %8, i32 0, i32 0, !dbg !146
+  %24 = load i64, ptr %23, align 8, !dbg !146
+  %25 = icmp eq i64 %24, 4, !dbg !146
+  %26 = alloca %string, align 8, !dbg !146
+  %String3 = getelementptr inbounds %string, ptr %26, i32 0, i32 0, !dbg !146
+  %Size4 = getelementptr inbounds %string, ptr %26, i32 0, i32 1, !dbg !146
+  store ptr @3, ptr %String3, align 8, !dbg !146
+  store i64 14, ptr %Size4, align 8, !dbg !146
+  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %13, ptr align 8 %26, i64 16, i1 false), !dbg !146
+  call void @os.assert(i1 %25, ptr %13), !dbg !146
+  ret i32 0, !dbg !147
+}
+
+declare void @json.get_item(ptr, ptr, ptr)
+
+declare void @json.parse(ptr, ptr, ptr)
+
+declare void @json.create_dict(ptr, ptr)
+
+declare void @json.add_kvp(ptr, ptr, ptr)
+
+declare i1 @json.is_whitespace(i32)
+
+declare i32 @json.peek_char(ptr)
+
+declare i32 @json.next_char(ptr)
+
+declare i32 @json.eat_char(ptr, i32)
+
+declare void @json.eat_whitespace(ptr)
+
+declare void @json.parse_string(ptr, ptr)
+
+declare void @json.make_parser(ptr, ptr)
+
+declare i1 @json.is_number(i32)
+
+declare void @json.parse_number(ptr, ptr)
+
+declare void @json.parse_literal(ptr, ptr)
+
+declare void @json.parse_value(ptr, ptr, ptr)
+
+declare void @json.parse_array(ptr, ptr, ptr)
+
+declare void @json.parse_object(ptr, ptr, ptr)
+
+declare void @init.global_initializers()
+
+declare i64 @init.get_struct_alignment(i64)
+
+declare i64 @init.get_type_alignment(i64)
+
+declare i64 @init.get_basic_type_size(ptr)
+
+declare i64 @init.get_struct_size(i64)
+
+declare i64 @init.get_type_size(i64)
+
+declare i64 @init.get_struct_member_offset(ptr, i64)
+
+declare i32 @main.main.1()
+
+declare i32 @main()
+
+declare void @os.assert(i1, ptr)
+
+declare i1 @WriteFile(ptr, ptr, i32, ptr, ptr)
+
+declare ptr @GetStdHandle(i32)
+
+declare void @ExitProcess(i32)
+
+declare i32 @SetConsoleOutputCP(i32)
+
+declare ptr @VirtualAlloc(ptr, i64, i32, i32)
+
+declare i1 @VirtualFree(ptr, i64, i32)
+
+declare i1 @ReadConsoleA(ptr, ptr, i32, ptr, ptr)
+
+declare void @os.abort()
+
+declare void @os.print(ptr, i32)
+
+declare ptr @os.alloc(i64)
+
+declare void @os.free(ptr)
+
+declare i32 @os.read_stdin_line(ptr, i32)
+
+declare void @io.push_string(ptr, ptr)
+
+declare void @io.format_uint(ptr, i64)
+
+declare void @io.format_int(ptr, i64)
+
+declare void @io.print_typetype(ptr, ptr)
+
+declare void @io.print_type(ptr, ptr)
+
+declare void @io.builder_to_string(ptr, ptr)
+
+declare void @io.print_type_with_formatter(ptr, i32, ptr)
+
+declare void @io.__internal_print(ptr, ptr, ptr)
+
+declare void @io.vsprint(ptr, ptr, ptr)
+
+declare void @io.sprint(ptr, ptr, ptr)
+
+declare void @io.print(ptr, ptr)
+
+declare void @io.println(ptr, ptr)
+
+declare void @io.readln(ptr, ptr, i32)
+
+declare i32 @io.get_next(ptr)
+
+declare void @"io.format_float:(type,*[]u32,f32,i32)->void"(i64, ptr, float, i32)
+
+declare void @"io.format_float:(type,*[]u32,f64,i32)->void"(i64, ptr, double, i32)
+
+declare ptr @mem.generic_alloc(i64, ptr)
+
+declare void @mem.generic_free(ptr, ptr)
+
+declare void @mem.create_generic_allocator(ptr)
+
+declare ptr @mem.arena_alloc(i64, ptr)
+
+declare void @mem.no_free(ptr, ptr)
+
+declare void @mem.create_scratch(ptr, i64)
+
+declare void @mem.destroy_scratch(ptr)
+
+declare ptr @memcpy(ptr, ptr, i64)
+
+declare ptr @memset(ptr, i32, i64)
+
+declare i32 @memcmp(ptr, ptr, i64)
+
+declare void @"mem.make_slice:(type,int,*mem.Allocator)->[]u8"(ptr, i64, i64, ptr)
+
+declare i64 @str.to_int(ptr)
+
+declare void @str.create(ptr, ptr)
+
+declare void @str.append(ptr, ptr)
+
+declare void @str.append_u32(ptr, i32)
+
+declare void @str.append_u8(ptr, i8)
+
+declare void @str.from_builder(ptr, ptr, ptr)
+
+declare void @str.substr(ptr, ptr, i64, i64)
+
+declare i64 @str.get_codepoint_size(ptr)
+
+declare ptr @str.advance(ptr)
+
+declare i32 @str.deref(ptr)
+
+declare i32 @str.index(ptr, i64)
+
+declare void @"array.create:(type,*mem.Allocator)->[]json.KeyValuePair"(ptr, i64, ptr)
+
+declare void @"array.add:(json.KeyValuePair {string,json.Value},json.KeyValuePair {string,json.Value})->void"(ptr, ptr)
+
+declare void @"array.create:(type,*mem.Allocator)->[]json.Value"(ptr, i64, ptr)
+
+declare void @"array.add:(json.Value {json.Type,json.ValueUnion},json.Value {json.Type,json.ValueUnion})->void"(ptr, ptr)
+
+declare void @"array.add:(*[]u32,u32)->void"(ptr, i32)
+
+declare void @"array.create:(type,*mem.Allocator)->[]u8"(ptr, i64, ptr)
+
+declare void @"array.add:(*[]u8,u8)->void"(ptr, i8)
+
+declare void @"array.create:(type,*mem.Allocator)->[]u32"(ptr, i64, ptr)
+
+declare void @"array.free:(*[]u32)->void"(ptr)
+
+declare void @"array.free:(*[]u8)->void"(ptr)
+
+; Function Attrs: nocallback nofree nounwind willreturn memory(argmem: readwrite)
+declare void @llvm.memcpy.p0.p0.i64(ptr noalias nocapture writeonly, ptr noalias nocapture readonly, i64, i1 immarg) #0
+
+; Function Attrs: nocallback nofree nosync nounwind speculatable willreturn memory(none)
+declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
+
+attributes #0 = { nocallback nofree nounwind willreturn memory(argmem: readwrite) }
+attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memory(none) }
+
+!llvm.dbg.cu = !{!0}
+!llvm.module.flags = !{!80, !81}
+
+!0 = distinct !DICompileUnit(language: DW_LANG_C99, file: !1, producer: "RCP Compiler", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, enums: !2, splitDebugInlining: false)
+!1 = !DIFile(filename: "main.rcp", directory: "E:\\Non_C_Projects\\RCPProjects\\rcpJSON\\src")
+!2 = !{!3, !15, !36, !45, !50, !54, !65, !71}
+!3 = !DICompositeType(tag: DW_TAG_enumeration_type, name: "init.TypeKind", scope: !1, file: !1, size: 64, align: 64, elements: !4)
+!4 = !{!5, !6, !7, !8, !9, !10, !11, !12, !13, !14}
+!5 = !DIEnumerator(name: "Invalid", value: 0, isUnsigned: true)
+!6 = !DIEnumerator(name: "Basic", value: 1, isUnsigned: true)
+!7 = !DIEnumerator(name: "Function", value: 2, isUnsigned: true)
+!8 = !DIEnumerator(name: "Struct", value: 3, isUnsigned: true)
+!9 = !DIEnumerator(name: "Pointer", value: 4, isUnsigned: true)
+!10 = !DIEnumerator(name: "Array", value: 5, isUnsigned: true)
+!11 = !DIEnumerator(name: "Slice", value: 6, isUnsigned: true)
+!12 = !DIEnumerator(name: "Vector", value: 7, isUnsigned: true)
+!13 = !DIEnumerator(name: "Enum", value: 8, isUnsigned: true)
+!14 = !DIEnumerator(name: "Generic", value: 9, isUnsigned: true)
+!15 = !DICompositeType(tag: DW_TAG_enumeration_type, name: "init.BasicKind", scope: !1, file: !1, size: 64, align: 64, elements: !16)
+!16 = !{!17, !18, !19, !20, !21, !22, !23, !24, !25, !26, !27, !28, !29, !30, !31, !32, !33, !34, !35}
+!17 = !DIEnumerator(name: "Bool", value: 0, isUnsigned: true)
+!18 = !DIEnumerator(name: "String", value: 1, isUnsigned: true)
+!19 = !DIEnumerator(name: "U8", value: 2, isUnsigned: true)
+!20 = !DIEnumerator(name: "U16", value: 3, isUnsigned: true)
+!21 = !DIEnumerator(name: "U32", value: 4, isUnsigned: true)
+!22 = !DIEnumerator(name: "U64", value: 5, isUnsigned: true)
+!23 = !DIEnumerator(name: "I8", value: 6, isUnsigned: true)
+!24 = !DIEnumerator(name: "I16", value: 7, isUnsigned: true)
+!25 = !DIEnumerator(name: "I32", value: 8, isUnsigned: true)
+!26 = !DIEnumerator(name: "I64", value: 9, isUnsigned: true)
+!27 = !DIEnumerator(name: "F32", value: 10, isUnsigned: true)
+!28 = !DIEnumerator(name: "F64", value: 11, isUnsigned: true)
+!29 = !DIEnumerator(name: "untypedInteger", value: 12, isUnsigned: true)
+!30 = !DIEnumerator(name: "untypedFloat", value: 13, isUnsigned: true)
+!31 = !DIEnumerator(name: "Int", value: 14, isUnsigned: true)
+!32 = !DIEnumerator(name: "Uint", value: 15, isUnsigned: true)
+!33 = !DIEnumerator(name: "Type", value: 16, isUnsigned: true)
+!34 = !DIEnumerator(name: "Auto", value: 17, isUnsigned: true)
+!35 = !DIEnumerator(name: "Module", value: 18, isUnsigned: true)
+!36 = !DICompositeType(tag: DW_TAG_enumeration_type, name: "init.BasicFlag", scope: !1, file: !1, size: 32, align: 32, elements: !37)
+!37 = !{!38, !39, !40, !41, !42, !43, !44}
+!38 = !DIEnumerator(name: "Boolean", value: 1, isUnsigned: true)
+!39 = !DIEnumerator(name: "Integer", value: 2, isUnsigned: true)
+!40 = !DIEnumerator(name: "Float", value: 4, isUnsigned: true)
+!41 = !DIEnumerator(name: "String", value: 8, isUnsigned: true)
+!42 = !DIEnumerator(name: "Untyped", value: 32, isUnsigned: true)
+!43 = !DIEnumerator(name: "Unsigned", value: 64, isUnsigned: true)
+!44 = !DIEnumerator(name: "TypeID", value: 128, isUnsigned: true)
+!45 = !DICompositeType(tag: DW_TAG_enumeration_type, name: "init.StructFlag", scope: !1, file: !1, size: 32, align: 32, elements: !46)
+!46 = !{!47, !48, !49}
+!47 = !DIEnumerator(name: "Packed", value: 1, isUnsigned: true)
+!48 = !DIEnumerator(name: "Generic", value: 2, isUnsigned: true)
+!49 = !DIEnumerator(name: "Union", value: 4, isUnsigned: true)
+!50 = !DICompositeType(tag: DW_TAG_enumeration_type, name: "init.VectorKind", scope: !1, file: !1, size: 64, align: 64, elements: !51)
+!51 = !{!52, !53}
+!52 = !DIEnumerator(name: "Float", value: 0, isUnsigned: true)
+!53 = !DIEnumerator(name: "Int", value: 1, isUnsigned: true)
+!54 = !DICompositeType(tag: DW_TAG_enumeration_type, name: "compile.CompileFlag", scope: !1, file: !1, size: 32, align: 32, elements: !55)
+!55 = !{!56, !57, !58, !59, !60, !61, !62, !63, !64}
+!56 = !DIEnumerator(name: "Debug", value: 1, isUnsigned: true)
+!57 = !DIEnumerator(name: "SanAddress", value: 2, isUnsigned: true)
+!58 = !DIEnumerator(name: "SanMemory", value: 4, isUnsigned: true)
+!59 = !DIEnumerator(name: "SanThread", value: 8, isUnsigned: true)
+!60 = !DIEnumerator(name: "SanUndefined", value: 16, isUnsigned: true)
+!61 = !DIEnumerator(name: "NoStdLib", value: 32, isUnsigned: true)
+!62 = !DIEnumerator(name: "SharedLib", value: 64, isUnsigned: true)
+!63 = !DIEnumerator(name: "CrossAndroid", value: 128, isUnsigned: true)
+!64 = !DIEnumerator(name: "NoLink", value: 256, isUnsigned: true)
+!65 = !DICompositeType(tag: DW_TAG_enumeration_type, name: "compile.Arch", scope: !1, file: !1, size: 32, align: 32, elements: !66)
+!66 = !{!67, !68, !69, !70}
+!67 = !DIEnumerator(name: "x86_64", value: 0, isUnsigned: true)
+!68 = !DIEnumerator(name: "x86", value: 1, isUnsigned: true)
+!69 = !DIEnumerator(name: "Arm32", value: 2, isUnsigned: true)
+!70 = !DIEnumerator(name: "Arm64", value: 4, isUnsigned: true)
+!71 = !DICompositeType(tag: DW_TAG_enumeration_type, name: "json.Type", scope: !1, file: !1, size: 64, align: 64, elements: !72)
+!72 = !{!73, !74, !75, !76, !77, !78, !79}
+!73 = !DIEnumerator(name: "Number", value: 0, isUnsigned: true)
+!74 = !DIEnumerator(name: "Integer", value: 1, isUnsigned: true)
+!75 = !DIEnumerator(name: "String", value: 2, isUnsigned: true)
+!76 = !DIEnumerator(name: "Object", value: 3, isUnsigned: true)
+!77 = !DIEnumerator(name: "Array", value: 4, isUnsigned: true)
+!78 = !DIEnumerator(name: "Boolean", value: 5, isUnsigned: true)
+!79 = !DIEnumerator(name: "Null", value: 6, isUnsigned: true)
+!80 = !{i32 2, !"CodeView", i32 1}
+!81 = !{i32 2, !"Debug Info Version", i32 3}
+!82 = distinct !DISubprogram(name: "main", linkageName: "main.main", scope: !1, file: !1, line: 10, type: !83, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !86)
+!83 = !DISubroutineType(types: !84)
+!84 = !{!85}
+!85 = !DIBasicType(name: "i32", size: 32, encoding: DW_ATE_signed)
+!86 = !{}
+!87 = !DILocation(line: 11, scope: !82)
+!88 = !DILocalVariable(name: "ga", scope: !82, file: !1, line: 11, type: !89)
+!89 = !DICompositeType(tag: DW_TAG_structure_type, name: "mem.Allocator", scope: !1, file: !1, size: 192, elements: !90)
+!90 = !{!91, !99, !103}
+!91 = !DIDerivedType(tag: DW_TAG_member, name: "alloc", scope: !1, file: !1, baseType: !92, size: 64, align: 64)
+!92 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*fn(int, *mem.Allocator) -> ?*", baseType: !93, size: 64, align: 64, dwarfAddressSpace: 0)
+!93 = !DISubroutineType(types: !94)
+!94 = !{!95, !96, !97}
+!95 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*void", baseType: null, size: 64, align: 64, dwarfAddressSpace: 0)
+!96 = !DIBasicType(name: "int", size: 64, encoding: DW_ATE_signed)
+!97 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*mem.Allocator", baseType: !98, size: 64, align: 64, dwarfAddressSpace: 0)
+!98 = !DICompositeType(tag: DW_TAG_structure_type, name: "mem.Allocator", scope: !1, file: !1, size: 192, align: 64, flags: DIFlagFwdDecl)
+!99 = !DIDerivedType(tag: DW_TAG_member, name: "free", scope: !1, file: !1, baseType: !100, size: 64, align: 64, offset: 64)
+!100 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*fn(*, *mem.Allocator)", baseType: !101, size: 64, align: 64, dwarfAddressSpace: 0)
+!101 = !DISubroutineType(types: !102)
+!102 = !{null, !95, !97}
+!103 = !DIDerivedType(tag: DW_TAG_member, name: "data", scope: !1, file: !1, baseType: !95, size: 64, align: 64, offset: 128)
+!104 = !DILocation(line: 12, scope: !82)
+!105 = !DILocalVariable(name: "obj", scope: !82, file: !1, line: 12, type: !106)
+!106 = !DICompositeType(tag: DW_TAG_structure_type, name: "json.Value", scope: !1, file: !1, size: 192, elements: !107)
+!107 = !{!108, !109}
+!108 = !DIDerivedType(tag: DW_TAG_member, name: "t", scope: !1, file: !1, baseType: !71, size: 64, align: 64)
+!109 = !DIDerivedType(tag: DW_TAG_member, name: "v", scope: !1, file: !1, baseType: !110, size: 128, align: 64, offset: 64)
+!110 = !DICompositeType(tag: DW_TAG_structure_type, name: "json.ValueUnion", scope: !1, file: !1, size: 128, elements: !111)
+!111 = !{!112, !114, !115, !122, !136, !141}
+!112 = !DIDerivedType(tag: DW_TAG_member, name: "number", scope: !1, file: !1, baseType: !113, size: 64, align: 64)
+!113 = !DIBasicType(name: "f64", size: 64, encoding: DW_ATE_float)
+!114 = !DIDerivedType(tag: DW_TAG_member, name: "integer", scope: !1, file: !1, baseType: !96, size: 64, align: 64)
+!115 = !DIDerivedType(tag: DW_TAG_member, name: "str", scope: !1, file: !1, baseType: !116, size: 128, align: 64)
+!116 = !DICompositeType(tag: DW_TAG_structure_type, name: "string", scope: !1, file: !1, size: 128, elements: !117)
+!117 = !{!118, !121}
+!118 = !DIDerivedType(tag: DW_TAG_member, name: "data", scope: !1, file: !1, baseType: !119, size: 64, align: 64)
+!119 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*u8", baseType: !120, size: 64, align: 64, dwarfAddressSpace: 0)
+!120 = !DIBasicType(name: "u8", size: 8, encoding: DW_ATE_unsigned)
+!121 = !DIDerivedType(tag: DW_TAG_member, name: "count", scope: !1, file: !1, baseType: !96, size: 64, align: 64, offset: 64)
+!122 = !DIDerivedType(tag: DW_TAG_member, name: "object", scope: !1, file: !1, baseType: !123, size: 128, align: 64)
+!123 = !DICompositeType(tag: DW_TAG_structure_type, name: "json.Dictionary", scope: !1, file: !1, size: 128, elements: !124)
+!124 = !{!125}
+!125 = !DIDerivedType(tag: DW_TAG_member, name: "val", scope: !1, file: !1, baseType: !126, size: 128, align: 64)
+!126 = !DICompositeType(tag: DW_TAG_structure_type, scope: !1, file: !1, size: 128, align: 64, elements: !127)
+!127 = !{!128, !129}
+!128 = !DIDerivedType(tag: DW_TAG_member, name: "count", scope: !1, file: !1, baseType: !96, size: 64, align: 64)
+!129 = !DIDerivedType(tag: DW_TAG_member, name: "data", scope: !1, file: !1, baseType: !130, size: 64, align: 64, offset: 64)
+!130 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*json.KeyValuePair", baseType: !131, size: 64, align: 64, dwarfAddressSpace: 0)
+!131 = !DICompositeType(tag: DW_TAG_structure_type, name: "json.KeyValuePair", scope: !1, file: !1, size: 320, elements: !132)
+!132 = !{!133, !134}
+!133 = !DIDerivedType(tag: DW_TAG_member, name: "name", scope: !1, file: !1, baseType: !116, size: 128, align: 64)
+!134 = !DIDerivedType(tag: DW_TAG_member, name: "obj", scope: !1, file: !1, baseType: !135, size: 192, align: 64, offset: 128)
+!135 = !DICompositeType(tag: DW_TAG_structure_type, name: "json.Value", scope: !1, file: !1, size: 192, align: 64, flags: DIFlagFwdDecl)
+!136 = !DIDerivedType(tag: DW_TAG_member, name: "array", scope: !1, file: !1, baseType: !137, size: 128, align: 64)
+!137 = !DICompositeType(tag: DW_TAG_structure_type, scope: !1, file: !1, size: 128, align: 64, elements: !138)
+!138 = !{!128, !139}
+!139 = !DIDerivedType(tag: DW_TAG_member, name: "data", scope: !1, file: !1, baseType: !140, size: 64, align: 64, offset: 64)
+!140 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*json.Value", baseType: !135, size: 64, align: 64, dwarfAddressSpace: 0)
+!141 = !DIDerivedType(tag: DW_TAG_member, name: "boolean", scope: !1, file: !1, baseType: !142, size: 8, align: 8)
+!142 = !DIBasicType(name: "bool", size: 8, encoding: DW_ATE_boolean)
+!143 = !DILocation(line: 14, scope: !82)
+!144 = !DILocalVariable(name: "it", scope: !82, file: !1, line: 14, type: !106)
+!145 = !DILocation(line: 15, scope: !82)
+!146 = !DILocation(line: 16, scope: !82)
+!147 = !DILocation(line: 21, scope: !82)

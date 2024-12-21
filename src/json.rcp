@@ -1,0 +1,333 @@
+json
+
+#import io
+#import mem
+#import str
+#import array as arr
+
+struct KeyValuePair {
+    name: string,
+    obj: Value,
+}
+
+struct Dictionary {
+    val: []KeyValuePair
+}
+
+union ValueUnion {
+    number: f64,
+    integer: int,
+    str: string,
+    object: Dictionary,
+    array: []Value,
+    boolean: bool,
+}
+
+struct Value {
+    t: Type,
+    v: ValueUnion,
+}
+
+enum Type {
+    Number,
+    Integer,
+    String,
+    Object,
+    Array,
+    Boolean,
+    Null
+}
+
+get_item :: fn(obj: Value, str: string) -> Value {
+    if obj.t != Type.Object return Value {};
+    vals := obj.v.object.val;
+    for val in vals {
+        // I FORGOT TO ADD STRING COMPARISON TO THE LANGUAGE
+        if val.name.count == str.count {
+            if mem.cmp(val.name.data, str.data, val.name.count) == 0 {
+                return val.obj;
+            }
+        }
+    }
+    return Value {};
+}
+
+parse :: fn(text: string, alloc: *mem.Allocator) -> Value {
+    p := make_parser(text);
+    return parse_object(&p, alloc);
+}
+
+
+#private
+
+struct Parser {
+    str: string,
+    pos: *u8,
+    at: int,
+    failed: bool
+}
+
+create_dict :: fn (alloc: *mem.Allocator) -> Dictionary {
+    return Dictionary {
+        val = arr.create(KeyValuePair, alloc)
+    };
+}
+
+add_kvp :: fn (dict: *Dictionary, name: string, value: Value) {
+    dict := dict;
+    arr.add(&dict.val, KeyValuePair { name, value });
+}
+
+is_whitespace :: fn(c: u32) -> bool {
+    return c == '\n' || c == '\r' || c == '\t' || c == ' ';
+}
+
+peek_char :: fn(p: *Parser) -> u32 {
+    return str.deref(p.pos);
+}
+
+next_char :: fn(p: *Parser) -> u32 {
+    p := p;
+    if p.at >= p.str.count {
+        p.failed = true;
+        return 0;
+    }
+    c := str.deref(p.pos);
+    p.pos = str.advance(p.pos);
+    p.at += 1;
+    return c;
+}
+
+eat_char :: fn(p: *Parser, c: u32) -> u32 {
+    p := p;
+    if peek_char(p) != c {
+        io.println("Expected %c but got %c", c, peek_char(p));
+        p.failed = true;
+        return 0;
+    }
+    next_char(p);
+    return c;
+}
+
+eat_whitespace :: fn(p: *Parser) {
+    for is_whitespace(peek_char(p)) {
+        next_char(p);
+    }
+}
+
+parse_string :: fn(p: *Parser) -> Value {
+    eat_char(p, '"');
+    if p.failed return Value {};
+    start := p.pos;
+    end := start;
+    for peek_char(p) != '"' && !p.failed {
+        if peek_char(p) == '\\' {
+            next_char(p);
+        }
+        end = p.pos;
+        next_char(p);
+    }
+
+    if p.failed return Value {};
+    eat_char(p, '"');
+
+    v_str := string { start, end-start+1 };
+    value := Value {};
+    value.t = Type.String;
+    value.v.str = v_str;
+    return value;
+}
+
+make_parser :: fn(text: string) -> Parser {
+    return Parser {
+        text,
+        text.data,
+        0,
+        false
+    };
+}
+
+is_number :: fn(c: u32) -> bool {
+    return c >= '0' && c <= '9';
+}
+
+parse_number :: fn(p: *Parser) -> Value {
+    is_neg := false;
+    if peek_char(p) == '-' {
+        is_neg = true;
+        next_char(p);
+        if !is_number(peek_char(p)) {
+            io.println("Invalid number literal");
+            return Value {};
+        }
+    }
+
+    num := 0;
+    for is_number(peek_char(p)) {
+        num *= 10;
+        num += @int (next_char(p) - '0');
+    }
+
+    if is_neg num = -num;
+
+    res := Value { };
+    res.t = Type.Integer;
+    res.v.integer = num;
+    return res;
+}
+
+parse_literal :: fn(p: *Parser) -> Value {
+    p := p;
+    if peek_char(p) == 't' {
+        eat_char(p, 'r');
+        eat_char(p, 'u');
+        eat_char(p, 'e');
+        if p.failed return Value {};
+
+        ret := Value {};
+        ret.t = Type.Boolean;
+        ret.v.boolean = true;
+        return ret;
+
+    } else if peek_char(p) == 'f' {
+        eat_char(p, 'a');
+        eat_char(p, 'l');
+        eat_char(p, 'e');
+        eat_char(p, 'e');
+        if p.failed return Value {};
+
+        ret := Value {};
+        ret.t = Type.Boolean;
+        ret.v.boolean = false;
+        return ret;
+
+    } else if peek_char(p) == 'n' {
+        eat_char(p, 'u');
+        eat_char(p, 'l');
+        eat_char(p, 'l');
+        if p.failed return Value {};
+
+        ret := Value {};
+        ret.t = Type.Null;
+        return ret;
+    }
+
+    io.println("Invalid literal value");
+    p.failed = true;
+    return Value {};
+}
+
+parse_value :: fn(p: *Parser, alloc: *mem.Allocator) -> Value {
+    p := p;
+    eat_whitespace(p);
+    c := peek_char(p);
+    if c == '"' {
+        return parse_string(p);
+    } else if c == '{' {
+        return parse_object(p, alloc);
+    } else if c == '[' {
+        return parse_array(p, alloc);
+    } else if is_number(c) {
+        return parse_number(p);
+    } else {
+        return parse_literal(p);
+    }
+    p.failed = true;
+    return Value {};
+}
+
+parse_array :: fn(p: *Parser, alloc: *mem.Allocator) -> Value {
+    p := p;
+    eat_char(p, '[');
+    if p.failed {
+        io.println("Array should start with a '['");
+        return Value {};
+    }
+
+    value := Value {};
+    value.t = Type.Array;
+    eat_whitespace(p);
+    if peek_char(p) == ']' {
+        return value;
+    }
+    value.v.array = arr.create(Value, alloc);
+
+    for {
+        v := parse_value(p, alloc);
+        if p.failed {
+            io.println("Invalid value in array");
+            return Value {};
+        }
+
+        arr.add(&value.v.array, v);
+
+        eat_whitespace(p);
+        if peek_char(p) == ']' {
+            next_char(p);
+            return value;
+        }
+
+        eat_char(p, ',');
+        if p.failed {
+            io.println("Expected , or ] after value in array");
+            return Value {};
+        }
+    }
+
+    return Value {};
+}
+
+parse_object :: fn(p: *Parser, alloc: *mem.Allocator) -> Value {
+    eat_char(p, '{');
+    if p.failed {
+        io.println("Object should start with a '{'");
+        return Value {};
+    }
+
+    obj := Value {};
+    obj.t = Type.Object;
+    obj.v.object = create_dict(alloc);
+    eat_whitespace(p);
+    if peek_char(p) == '}' {
+        return obj;
+    }
+
+    for {
+        name := parse_string(p);
+        if p.failed {
+            io.println("Invalid name in json");
+            return Value {};
+        }
+        eat_whitespace(p);
+        eat_char(p, ':');
+        if p.failed {
+            io.println("Expected : after \"%\"", name.v.str);
+            return Value {};
+        }
+        value := parse_value(p, alloc);
+        if p.failed {
+            io.println("Invalid value for \"%\"", name.v.str);
+            return Value {};
+        }
+
+        add_kvp(&obj.v.object, name.v.str, value);
+
+        eat_whitespace(p);
+        if peek_char(p) == '}' {
+            return obj;
+        }
+
+        eat_char(p, ',');
+        if p.failed {
+            io.println("Expected , or } after \"%\" value ", name.v.str);
+            return Value {};
+        }
+
+        eat_whitespace(p);
+
+    }
+
+    return Value {};
+}
+
+
