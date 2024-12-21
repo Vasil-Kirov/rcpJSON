@@ -38,18 +38,18 @@ enum Type {
     Null
 }
 
-get_item :: fn(obj: Value, str: string) -> Value {
-    if obj.t != Type.Object return Value {};
+get_item :: fn(obj: Value, str: string) -> (Value, bool) {
+    if obj.t != Type.Object return Value {}, false;
     vals := obj.v.object.val;
     for val in vals {
         // I FORGOT TO ADD STRING COMPARISON TO THE LANGUAGE
         if val.name.count == str.count {
             if mem.cmp(val.name.data, str.data, val.name.count) == 0 {
-                return val.obj;
+                return val.obj, true;
             }
         }
     }
-    return Value {};
+    return Value {}, false;
 }
 
 parse :: fn(text: string, alloc: *mem.Allocator) -> Value {
