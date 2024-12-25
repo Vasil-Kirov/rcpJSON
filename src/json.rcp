@@ -38,15 +38,19 @@ enum Type {
     Null
 }
 
-get_item :: fn(obj: Value, str: string) -> (Value, bool) {
+get_array_item :: fn(arr: Value, idx: int) -> (Value, bool) {
+    if arr.t != Type.Array return Value {}, false;
+	if arr.v.array.count <= idx return Value {}, false;
+
+    return arr.v.array[idx], true;
+}
+
+get_obj_field :: fn(obj: Value, str: string) -> (Value, bool) {
     if obj.t != Type.Object return Value {}, false;
     vals := obj.v.object.val;
     for val in vals {
-        // I FORGOT TO ADD STRING COMPARISON TO THE LANGUAGE
-        if val.name.count == str.count {
-            if mem.cmp(val.name.data, str.data, val.name.count) == 0 {
-                return val.obj, true;
-            }
+        if val.name == str {
+			return val.obj, true;
         }
     }
     return Value {}, false;
@@ -58,84 +62,12 @@ parse :: fn(text: string, alloc: *mem.Allocator) -> Value {
 }
 
 
-#private
 
 struct Parser {
     str: string,
     pos: *u8,
     at: int,
     failed: bool
-}
-
-create_dict :: fn (alloc: *mem.Allocator) -> Dictionary {
-    return Dictionary {
-        val = arr.create(KeyValuePair, alloc)
-    };
-}
-
-add_kvp :: fn (dict: *Dictionary, name: string, value: Value) {
-    dict := dict;
-    arr.add(&dict.val, KeyValuePair { name, value });
-}
-
-is_whitespace :: fn(c: u32) -> bool {
-    return c == '\n' || c == '\r' || c == '\t' || c == ' ';
-}
-
-peek_char :: fn(p: *Parser) -> u32 {
-    return str.deref(p.pos);
-}
-
-next_char :: fn(p: *Parser) -> u32 {
-    p := p;
-    if p.at >= p.str.count {
-        p.failed = true;
-        return 0;
-    }
-    c := str.deref(p.pos);
-    p.pos = str.advance(p.pos);
-    p.at += 1;
-    return c;
-}
-
-eat_char :: fn(p: *Parser, c: u32) -> u32 {
-    p := p;
-    if peek_char(p) != c {
-        io.println("Expected %c but got %c", c, peek_char(p));
-        p.failed = true;
-        return 0;
-    }
-    next_char(p);
-    return c;
-}
-
-eat_whitespace :: fn(p: *Parser) {
-    for is_whitespace(peek_char(p)) {
-        next_char(p);
-    }
-}
-
-parse_string :: fn(p: *Parser) -> Value {
-    eat_char(p, '"');
-    if p.failed return Value {};
-    start := p.pos;
-    end := start;
-    for peek_char(p) != '"' && !p.failed {
-        if peek_char(p) == '\\' {
-            next_char(p);
-        }
-        end = p.pos;
-        next_char(p);
-    }
-
-    if p.failed return Value {};
-    eat_char(p, '"');
-
-    v_str := string { start, end-start+1 };
-    value := Value {};
-    value.t = Type.String;
-    value.v.str = v_str;
-    return value;
 }
 
 make_parser :: fn(text: string) -> Parser {
@@ -176,6 +108,80 @@ parse_number :: fn(p: *Parser) -> Value {
     return res;
 }
 
+
+peek_char :: fn(p: *Parser) -> u32 {
+    return str.deref(p.pos);
+}
+
+next_char :: fn(p: *Parser) -> u32 {
+    p := p;
+    if p.at >= p.str.count {
+        p.failed = true;
+        return 0;
+    }
+    c := str.deref(p.pos);
+    p.pos = str.advance(p.pos);
+    p.at += 1;
+    return c;
+}
+
+eat_char :: fn(p: *Parser, c: u32) -> u32 {
+    p := p;
+    if peek_char(p) != c {
+        io.println("Expected %c but got %c", c, peek_char(p));
+        p.failed = true;
+        return 0;
+    }
+    next_char(p);
+    return c;
+}
+
+eat_whitespace :: fn(p: *Parser) {
+    for is_whitespace(peek_char(p)) {
+        next_char(p);
+    }
+}
+
+
+#private
+create_dict :: fn (alloc: *mem.Allocator) -> Dictionary {
+    return Dictionary {
+        val = arr.create(KeyValuePair, alloc)
+    };
+}
+
+add_kvp :: fn (dict: *Dictionary, name: string, value: Value) {
+    dict := dict;
+    arr.add(&dict.val, KeyValuePair { name, value });
+}
+
+is_whitespace :: fn(c: u32) -> bool {
+    return c == '\n' || c == '\r' || c == '\t' || c == ' ';
+}
+
+parse_string :: fn(p: *Parser) -> Value {
+    eat_char(p, '"');
+    if p.failed return Value {};
+    start := p.pos;
+    end := start;
+    for peek_char(p) != '"' && !p.failed {
+        if peek_char(p) == '\\' {
+            next_char(p);
+        }
+        end = p.pos;
+        next_char(p);
+    }
+
+    if p.failed return Value {};
+    eat_char(p, '"');
+
+    v_str := string { end-start+1, start };
+    value := Value {};
+    value.t = Type.String;
+    value.v.str = v_str;
+    return value;
+}
+
 parse_literal :: fn(p: *Parser) -> Value {
     p := p;
     if peek_char(p) == 't' {
@@ -192,7 +198,7 @@ parse_literal :: fn(p: *Parser) -> Value {
     } else if peek_char(p) == 'f' {
         eat_char(p, 'a');
         eat_char(p, 'l');
-        eat_char(p, 'e');
+        eat_char(p, 's');
         eat_char(p, 'e');
         if p.failed return Value {};
 
