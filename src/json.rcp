@@ -29,6 +29,7 @@ struct Value {
 }
 
 enum Type {
+	Invalid,
     Number,
     Integer,
     String,
@@ -58,6 +59,7 @@ get_obj_field :: fn(obj: Value, str: string) -> (Value, bool) {
 
 parse :: fn(text: string, alloc: *mem.Allocator) -> Value {
     p := make_parser(text);
+	eat_whitespace(&p);
     return parse_object(&p, alloc);
 }
 
@@ -185,6 +187,7 @@ parse_string :: fn(p: *Parser) -> Value {
 parse_literal :: fn(p: *Parser) -> Value {
     p := p;
     if peek_char(p) == 't' {
+        eat_char(p, 't');
         eat_char(p, 'r');
         eat_char(p, 'u');
         eat_char(p, 'e');
@@ -196,6 +199,7 @@ parse_literal :: fn(p: *Parser) -> Value {
         return ret;
 
     } else if peek_char(p) == 'f' {
+        eat_char(p, 'f');
         eat_char(p, 'a');
         eat_char(p, 'l');
         eat_char(p, 's');
@@ -208,6 +212,7 @@ parse_literal :: fn(p: *Parser) -> Value {
         return ret;
 
     } else if peek_char(p) == 'n' {
+        eat_char(p, 'n');
         eat_char(p, 'u');
         eat_char(p, 'l');
         eat_char(p, 'l');
@@ -295,6 +300,7 @@ parse_object :: fn(p: *Parser, alloc: *mem.Allocator) -> Value {
     obj.v.object = create_dict(alloc);
     eat_whitespace(p);
     if peek_char(p) == '}' {
+		next_char(p);
         return obj;
     }
 
@@ -320,6 +326,7 @@ parse_object :: fn(p: *Parser, alloc: *mem.Allocator) -> Value {
 
         eat_whitespace(p);
         if peek_char(p) == '}' {
+			next_char(p);
             return obj;
         }
 
