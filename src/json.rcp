@@ -43,6 +43,56 @@ enum Type {
     Null
 }
 
+make_string :: fn(str: string) -> Value {
+	v := Value {
+		t = Type.String
+	};
+	v.v.str = str;
+	return v;
+}
+
+make_bool :: fn(b: bool) -> Value {
+	v := Value {
+		t = Type.Boolean
+	};
+	v.v.boolean = b;
+	return v;
+}
+
+make_integer :: fn(i: int) -> Value {
+	v := Value {
+		t = Type.Integer
+	};
+	v.v.integer = i;
+	return v;
+}
+
+make_obj :: fn(alloc: *mem.Allocator) -> Value {
+	v := Value {
+		t = Type.Object
+	};
+	v.v.object = create_dict(alloc);
+	return v;
+}
+
+make_array :: fn(alloc: *mem.Allocator) -> Value {
+	v := Value {
+		t = Type.Array
+	};
+	v.v.array = arr.create(Value, alloc);
+	return v;
+}
+
+add_item :: fn(json_arr: *Value, v: Value) {
+	json_arr := json_arr;
+	arr.add(&json_arr.v.array, v);
+}
+
+add_field :: fn(obj: *Value, name: string, v: Value) {
+	obj := obj;
+	add_kvp(&obj.v.object, name, v);
+}
+
 print :: fn(json: Value, alloc: *mem.Allocator) -> string {
 	b := str.create(alloc);
 	print_value(json, &b);
