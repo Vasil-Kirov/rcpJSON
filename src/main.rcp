@@ -9,11 +9,11 @@ test_string :: #embed_str "../test.json";
 //test_string :: "{\"v\": \"\"}";
 
 main :: fn() -> i32 {
-    ga := mem.create_generic_allocator();
-    obj := json.parse(test_string, &ga);
-	json.print_whitespace = true;
-	str := json.print(obj, &ga);
-	io.println("%", str);
+    scratch := mem.create_scratch(mem.mb(1));
+	defer mem.destroy_scratch(&scratch);
+
+	provider := json.make_obj(&scratch);
+	//json.add_field(&provider, "triggerCharacters", json.make_array(&scratch));
 
 
     return 0;
