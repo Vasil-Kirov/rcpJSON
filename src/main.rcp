@@ -6,19 +6,15 @@ main
 #import io
 
 test_string :: #embed_str "../test.json";
+//test_string :: "{\"v\": \"\"}";
 
 main :: fn() -> i32 {
     ga := mem.create_generic_allocator();
     obj := json.parse(test_string, &ga);
+	json.print_whitespace = true;
+	str := json.print(obj, &ga);
+	io.println("%", str);
 
-    it, success := json.get_item(obj, "foo");
-    if success {
-        io.println("%", it.t);
-        os.assert(it.t == json.Type.Array, "Expected array");
-        for item in it.v.array {
-            io.println("Value: %", item.v.integer);
-        }
-    }
 
     return 0;
 }

@@ -4,6 +4,10 @@ json
 #import mem
 #import str
 #import array as arr
+#import os
+
+print_whitespace := false;
+indent := 0;
 
 struct KeyValuePair {
     name: string,
@@ -37,6 +41,127 @@ enum Type {
     Array,
     Boolean,
     Null
+}
+
+print :: fn(json: Value, alloc: *mem.Allocator) -> string {
+	b := str.create(alloc);
+	print_value(json, &b);
+	return str.from_builder(&b, alloc);
+}
+
+print_value :: fn(v: Value, b: *str.Builder) {
+	match v.t {
+		Type.Object: print_object(v, b);
+		Type.Array: print_array(v, b);
+		Type.Boolean: print_bool(v, b);
+		Type.String: print_string(v, b);
+		Type.Integer: print_integer(v, b);
+		Type.Number: os.assert(false, "doubles are not supported");
+		Type.Invalid: os.assert(false, "invalid value passed for printing");
+		Type.Null: str.append(b, "null");
+	};
+}
+
+print_integer :: fn(json: Value, b: *str.Builder) {
+	os.assert(json.t == Type.Integer, "Value must be integer");
+	v := json.v.integer;
+	if v < 0 {
+		str.append_u32(b, '-');
+		v = -v;
+	}
+	if v == 0 {
+		str.append_u32(b, '0');
+		return;
+	}
+
+	tmp := [128]u32 {};
+	count := 0;
+	for v != 0 {
+		c := (@u32 (v % 10)) + '0';
+		tmp[count] = c;
+		count += 1;
+		v /= 10;
+	}
+
+	count -= 1;
+	for count >= 0 {
+		str.append_u32(b, tmp[count]);
+		count -= 1;
+	}
+}
+
+print_string :: fn(s: Value, b: *str.Builder) {
+	os.assert(s.t == Type.String, "Value must be string");
+	str.append_u32(b, '"');
+	str.append(b, s.v.str);
+	str.append_u32(b, '"');
+}
+
+print_bool :: fn(boolean: Value, b: *str.Builder) {
+	os.assert(boolean.t == Type.Boolean, "Value must be boolean");
+	if boolean.v.boolean {
+		str.append(b, "true");
+	} else {
+		str.append(b, "false");
+	}
+}
+
+print_array :: fn(arr: Value, b: *str.Builder) {
+	os.assert(arr.t == Type.Array, "Value must be array");
+	str.append(b, "[");
+	print_nl(b);
+	indent += 1;
+	for v in arr.v.array {
+		if i != 0 {
+			str.append_u32(b, ',');
+			print_nl(b);
+		}
+		print_indent(b);
+		print_value(v, b);
+	}
+	indent -= 1;
+	print_nl(b);
+	print_indent(b);
+	str.append(b, "]");
+}
+
+print_indent :: fn(b: *str.Builder) {
+	if !print_whitespace return;
+	for i in indent {
+		str.append_u32(b, '\t');
+	}
+}
+
+print_nl :: fn(b: *str.Builder) {
+	if !print_whitespace return;
+	str.append_u32(b, '\n');
+}
+
+print_object :: fn(obj: Value, b: *str.Builder) {
+	os.assert(obj.t == Type.Object, "Value must be object");
+
+	indent += 1;
+
+	str.append(b, "{");
+	print_nl(b);
+	for pair in obj.v.object.val {
+		if i != 0 {
+			str.append_u32(b, ',');
+			print_nl(b);
+		}
+		print_indent(b);
+		str.append_u32(b, '"');
+		str.append(b, pair.name);
+		str.append_u32(b, '"');
+		str.append_u32(b, ':');
+		if print_whitespace str.append_u32(b, ' ');
+		print_value(pair.obj, b);
+	}
+	print_nl(b);
+	indent -= 1;
+	print_indent(b);
+	str.append(b, "}");
+
 }
 
 get_array_item :: fn(arr: Value, idx: int) -> (Value, bool) {
@@ -170,14 +295,15 @@ parse_string :: fn(p: *Parser) -> Value {
         if peek_char(p) == '\\' {
             next_char(p);
         }
-        end = p.pos;
         next_char(p);
+        end = p.pos;
     }
 
     if p.failed return Value {};
     eat_char(p, '"');
 
-    v_str := string { end-start+1, start };
+    v_str := string { end-start, start };
+	if v_str.count == 0 v_str = "";
     value := Value {};
     value.t = Type.String;
     value.v.str = v_str;
