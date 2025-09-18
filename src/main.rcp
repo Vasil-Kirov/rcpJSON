@@ -15,6 +15,13 @@ main :: fn() -> i32 {
 	provider := json.make_obj(&scratch);
 	//json.add_field(&provider, "triggerCharacters", json.make_array(&scratch));
 
+    it, success := json.get_item(obj, "foo");
+    if success {
+        os.assert(it.t == json.Type.Array, "Expected array");
+        for item in it.v.array {
+            io.println("Value: %", item.v.integer);
+        }
+    }
 
     return 0;
 }

@@ -226,7 +226,7 @@ get_obj_field :: fn(obj: Value, str: string) -> (Value, bool) {
     vals := obj.v.object.val;
     for val in vals {
         if val.name == str {
-			return val.obj, true;
+            return val.obj, true;
         }
     }
     return Value {}, false;
@@ -237,8 +237,6 @@ parse :: fn(text: string, alloc: *mem.Allocator) -> Value {
 	eat_whitespace(&p);
     return parse_object(&p, alloc);
 }
-
-
 
 struct Parser {
     str: string,
