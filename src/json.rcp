@@ -1,9 +1,9 @@
-json
+module json;
 
 #import io
 #import mem
 #import str
-#import array as arr
+arr :: #import array;
 #import os
 
 print_whitespace := false;
@@ -94,40 +94,99 @@ add_field :: fn(obj: *Value, name: string, v: Value) {
 }
 
 print :: fn(json: Value, alloc: *mem.Allocator) -> string {
-	b := str.create(alloc);
+	b := str.create_builder(alloc);
 	print_value(json, &b);
 	return str.from_builder(&b, alloc);
 }
 
 print_value :: fn(v: Value, b: *str.Builder) {
-	match v.t {
-		Type.Object: print_object(v, b);
-		Type.Array: print_array(v, b);
-		Type.Boolean: print_bool(v, b);
-		Type.String: print_string(v, b);
-		Type.Integer: print_integer(v, b);
-		Type.Number: os.assert(false, "doubles are not supported");
-		Type.Invalid: os.assert(false, "invalid value passed for printing");
-		Type.Null: str.append(b, "null");
+	switch v.t {
+		case .Object: print_object(v, b);
+		case .Array: print_array(v, b);
+		case .Boolean: print_bool(v, b);
+		case .String: print_string(v, b);
+		case .Integer: print_integer(v, b);
+		case .Number: str.format_float(f64, b, v.v.number, io.FLOAT_ROUND_AT);
+		case .Invalid: os.assert(false, "invalid value passed for printing");
+		case .Null: str.builder_append(b, "null");
 	};
+}
+
+read_into :: fn(v: Value, out: *, t: type) -> bool {
+	v := v;
+	ti := type_info t;
+
+	switch v.t {
+		case .Object:
+		{
+			if ti.kind != .Struct
+				return false;
+			start: *u8 = out;
+			for i, it in v.v.object.val {
+				if !read_into(it.obj, start + get_struct_member_offset(ti.t.struct_, i), ti.t.struct_.members[i].t)
+					return false;
+			}
+		}
+		case .Array:
+		{
+			if ti.kind != .Slice
+				return false;
+			tsize := get_type_size(ti.t.slice.t);
+			mem.copy(out, &v.v.array.count, size_of int);
+			datap: **u8 = ((out as *int) + 1) as **u8;
+			*datap = mem.temp_alloc.alloc(tsize * v.v.array.count, &mem.temp_alloc);
+			at := *datap;
+			for it in v.v.array {
+				if !read_into(it, at, ti.t.slice.t)
+					return false;
+				at += tsize;
+			}
+		}
+		case .Boolean:
+		{
+			if t != bool return false;
+			mem.copy(out, &v.v, size_of bool);
+		}
+		case .String:
+		{
+			if t != string return false;
+			mem.copy(out, &v.v, size_of string);
+		}
+		case .Number:
+		{
+			if t != f64 return false;
+			mem.copy(out, &v.v, size_of f64);
+		}
+		case .Integer:
+		{
+			if t != int return false;
+			mem.copy(out, &v.v, size_of int);
+		}
+		case .Invalid:
+			return false;
+		case .Null:
+		{}
+
+	};
+	return true;
 }
 
 print_integer :: fn(json: Value, b: *str.Builder) {
 	os.assert(json.t == Type.Integer, "Value must be integer");
 	v := json.v.integer;
 	if v < 0 {
-		str.append_u32(b, '-');
+		str.builder_append_u32(b, '-');
 		v = -v;
 	}
 	if v == 0 {
-		str.append_u32(b, '0');
+		str.builder_append_u32(b, '0');
 		return;
 	}
 
 	tmp := [128]u32 {};
 	count := 0;
 	for v != 0 {
-		c := (@u32 (v % 10)) + '0';
+		c := (v % 10) as u32 + '0';
 		tmp[count] = c;
 		count += 1;
 		v /= 10;
@@ -135,35 +194,35 @@ print_integer :: fn(json: Value, b: *str.Builder) {
 
 	count -= 1;
 	for count >= 0 {
-		str.append_u32(b, tmp[count]);
+		str.builder_append_u32(b, tmp[count]);
 		count -= 1;
 	}
 }
 
 print_string :: fn(s: Value, b: *str.Builder) {
 	os.assert(s.t == Type.String, "Value must be string");
-	str.append_u32(b, '"');
-	str.append(b, s.v.str);
-	str.append_u32(b, '"');
+	str.builder_append_u32(b, '"');
+	str.builder_append(b, s.v.str);
+	str.builder_append_u32(b, '"');
 }
 
 print_bool :: fn(boolean: Value, b: *str.Builder) {
 	os.assert(boolean.t == Type.Boolean, "Value must be boolean");
 	if boolean.v.boolean {
-		str.append(b, "true");
+		str.builder_append(b, "true");
 	} else {
-		str.append(b, "false");
+		str.builder_append(b, "false");
 	}
 }
 
 print_array :: fn(arr: Value, b: *str.Builder) {
 	os.assert(arr.t == Type.Array, "Value must be array");
-	str.append(b, "[");
+	str.builder_append(b, "[");
 	print_nl(b);
 	indent += 1;
-	for v in arr.v.array {
+	for i, v in arr.v.array {
 		if i != 0 {
-			str.append_u32(b, ',');
+			str.builder_append_u32(b, ',');
 			print_nl(b);
 		}
 		print_indent(b);
@@ -172,19 +231,19 @@ print_array :: fn(arr: Value, b: *str.Builder) {
 	indent -= 1;
 	print_nl(b);
 	print_indent(b);
-	str.append(b, "]");
+	str.builder_append(b, "]");
 }
 
 print_indent :: fn(b: *str.Builder) {
 	if !print_whitespace return;
 	for i in indent {
-		str.append_u32(b, '\t');
+		str.builder_append_u32(b, '\t');
 	}
 }
 
 print_nl :: fn(b: *str.Builder) {
 	if !print_whitespace return;
-	str.append_u32(b, '\n');
+	str.builder_append_u32(b, '\n');
 }
 
 print_object :: fn(obj: Value, b: *str.Builder) {
@@ -192,25 +251,25 @@ print_object :: fn(obj: Value, b: *str.Builder) {
 
 	indent += 1;
 
-	str.append(b, "{");
+	str.builder_append(b, "{");
 	print_nl(b);
-	for pair in obj.v.object.val {
+	for i, pair in obj.v.object.val {
 		if i != 0 {
-			str.append_u32(b, ',');
+			str.builder_append_u32(b, ',');
 			print_nl(b);
 		}
 		print_indent(b);
-		str.append_u32(b, '"');
-		str.append(b, pair.name);
-		str.append_u32(b, '"');
-		str.append_u32(b, ':');
-		if print_whitespace str.append_u32(b, ' ');
+		str.builder_append_u32(b, '"');
+		str.builder_append(b, pair.name);
+		str.builder_append_u32(b, '"');
+		str.builder_append_u32(b, ':');
+		if print_whitespace str.builder_append_u32(b, ' ');
 		print_value(pair.obj, b);
 	}
 	print_nl(b);
 	indent -= 1;
 	print_indent(b);
-	str.append(b, "}");
+	str.builder_append(b, "}");
 
 }
 
@@ -258,10 +317,12 @@ is_number :: fn(c: u32) -> bool {
     return c >= '0' && c <= '9';
 }
 
+atof :: fn(s: *u8) -> f64 #foreign;
+atoi :: fn(s: *u8) -> i32 #foreign;
+
 parse_number :: fn(p: *Parser) -> Value {
-    is_neg := false;
+	start := p.pos;
     if peek_char(p) == '-' {
-        is_neg = true;
         next_char(p);
         if !is_number(peek_char(p)) {
             io.println("Invalid number literal");
@@ -269,17 +330,26 @@ parse_number :: fn(p: *Parser) -> Value {
         }
     }
 
-    num := 0;
-    for is_number(peek_char(p)) {
-        num *= 10;
-        num += @int (next_char(p) - '0');
+	is_double := false;
+
+    for is_number(peek_char(p)) || (peek_char(p) == '.' && !is_double) {
+		c := next_char(p);
+		if c == '.'
+			is_double = true;
     }
 
-    if is_neg num = -num;
+	if is_double {
+		res := Value {
+			t = .Number,
+		};
+		res.v.number = atof(start);
+		return res;
+	}
+
 
     res := Value { };
     res.t = Type.Integer;
-    res.v.integer = num;
+    res.v.integer = atoi(start);
     return res;
 }
 

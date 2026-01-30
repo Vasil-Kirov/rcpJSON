@@ -1,1 +1,22 @@
-{"params":{"context":{"triggerKind":1},"textDocument":{"uri":"file:\/\/\/home\/vasko\/programming\/rcpJSON\/build.rcp"},"position":{"character":2,"line":11}},"id":2,"method":"textDocument\/completion","jsonrpc":"2.0"}
+
+{
+  "name": "TestConfig",
+  "version": 1,
+  "enabled": true,
+  "timeout": 30.32,
+  "tags": ["test", "json", "parser"],
+  "settings": {
+    "retryCount": 3,
+    "logLevel": "info"
+  },
+  "items": [
+    {
+      "id": 1,
+      "value": "alpha"
+    },
+    {
+      "id": 2,
+      "value": "beta"
+    }
+  ]
+}

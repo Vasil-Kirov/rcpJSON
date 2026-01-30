@@ -1,27 +1,43 @@
-main
+module main;
 
-#import json
-#import mem
-#import os
-#import io
+#import json;
+#import mem;
+#import os;
+_ :: #import io;
 
 test_string :: #embed_str "../test.json";
 //test_string :: "{\"v\": \"\"}";
+
+struct Test {
+	name: string,
+	version: int,
+	enabled: bool,
+	timeout: f64,
+	tags: []string,
+	settings: struct {
+		retryCount: int,
+		logLevel: string,
+		output: string,
+	},
+	items: [] struct {
+		id: int,
+		value: string,
+	},
+};
 
 main :: fn() -> i32 {
     scratch := mem.create_scratch(mem.mb(1));
 	defer mem.destroy_scratch(&scratch);
 
-	provider := json.make_obj(&scratch);
-	//json.add_field(&provider, "triggerCharacters", json.make_array(&scratch));
+	obj := json.parse(test_string, &scratch);
+	t := Test{};
+	if json.read_into(obj, &t, Test) {
+		println("Success: %", t);
+	}
+	else {
+		println("Failed!");
+	}
 
-    it, success := json.get_item(obj, "foo");
-    if success {
-        os.assert(it.t == json.Type.Array, "Expected array");
-        for item in it.v.array {
-            io.println("Value: %", item.v.integer);
-        }
-    }
 
     return 0;
 }

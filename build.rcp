@@ -1,28 +1,23 @@
-build
+module build;
 
-#import compile as c
-#import array as arr
+c   :: #import compile;
+arr :: #import array;
+_   :: #import io;
 #import mem
 #import str
 
 files :: []string { "main.rcp", "json.rcp" };
 
 compile :: fn() -> c.CompileInfo {
-    ga := mem.create_generic_allocator();
-    out := c.CompileInfo {
-        files = arr.create(string, &ga)
+    return .{
+		source_dirs = .{"../src/"},
+		flags = .DebugInfo,
+        files = files
+
     };
-
-    for f in files {
-        b := str.create(&ga);
-        str.append(&b, "../src/");
-        str.append(&b, f);
-        file := str.from_builder(&b, &ga);
-
-        arr.add(&out.files, file);
-    }
-
-    return out;
 }
 
+after_link :: fn(objs: []string) {
+	println("Done!");
+}
 
