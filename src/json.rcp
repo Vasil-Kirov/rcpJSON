@@ -33,7 +33,7 @@ struct Value {
 }
 
 enum Type {
-	Invalid,
+    Invalid,
     Number,
     Integer,
     String,
@@ -48,6 +48,14 @@ make_string :: fn(str: string) -> Value {
 		t = Type.String
 	};
 	v.v.str = str;
+	return v;
+}
+
+make_number :: fn(n: f64) -> Value {
+	v := Value {
+		t = Type.Number
+	};
+	v.v.number = n;
 	return v;
 }
 
@@ -171,6 +179,75 @@ read_into :: fn(v: Value, out: *, t: type) -> bool {
 	return true;
 }
 
+#private
+into_json_ :: fn(vp: *u8, t: *TypeInfo, alloc: *mem.Allocator) -> Value {
+	switch t.kind {
+		case .Basic:
+		{
+			switch t.t.basic.kind
+			{
+				case .Bool:
+					return make_bool(*(vp as *bool));
+				case .Int:
+					return make_integer(*(vp as *int));
+				case .F64:
+					return make_number(*(vp as *f64));
+				case .String:
+					return make_string(*(vp as *string));
+				case _:
+					return .{};
+			};
+		}
+		case .Array:
+		{
+			arr := make_array(alloc);
+			//s := *(vp as *[]u8);
+			elem_size := get_type_size(t.t.array.t);
+			for i in t.t.array.member_count {
+				offset := i as int * elem_size;
+				add_item(&arr, into_json_(vp + offset, type_info(t.t.array.t), alloc));
+			}
+			return arr;
+		}
+		case .Slice:
+		{
+			arr := make_array(alloc);
+			s := *(vp as *[]u8);
+			elem_size := get_type_size(t.t.slice.t);
+			for i in s.count {
+				offset := i as int * elem_size;
+				p := s.data;
+				add_item(&arr, into_json_(&p[offset], type_info(t.t.slice.t), alloc));
+			}
+			return arr;
+		}
+		case .Struct:
+		{
+			obj := make_obj(alloc);
+
+			for i, mem in t.t.struct_.members {
+				offset := get_struct_member_offset(t.t.struct_, i);
+				mem_p := vp + offset;
+				add_field(&obj, mem.name, into_json_(mem_p, type_info(mem.t), alloc));
+			}
+			return obj;
+		}
+		case _:
+		{
+		}
+	};
+	return .{};
+}
+
+#public
+
+into_json :: fn(v: $T, alloc: *mem.Allocator) -> Value {
+	v := v;
+	ti := type_info T;
+	vp := &v;
+	return into_json_(vp as *u8, ti, alloc);
+}
+
 print_integer :: fn(json: Value, b: *str.Builder) {
 	os.assert(json.t == Type.Integer, "Value must be integer");
 	v := json.v.integer;
@@ -291,10 +368,11 @@ get_obj_field :: fn(obj: Value, str: string) -> (Value, bool) {
     return Value {}, false;
 }
 
-parse :: fn(text: string, alloc: *mem.Allocator) -> Value {
+parse :: fn(text: string, alloc: *mem.Allocator) -> (bool, Value) {
     p := make_parser(text);
-	eat_whitespace(&p);
-    return parse_object(&p, alloc);
+    eat_whitespace(&p);
+    v := parse_object(&p, alloc);
+    return (!p.failed), v;
 }
 
 struct Parser {

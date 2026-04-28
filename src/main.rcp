@@ -25,18 +25,42 @@ struct Test {
 	},
 };
 
+struct Stuff {
+	x: []f64,
+	y: [4]int,
+	z: string,
+	w: struct {
+		f: [2]string
+	}
+};
+
 main :: fn() -> i32 {
-    scratch := mem.create_scratch(mem.mb(1));
+	scratch := mem.create_scratch(mem.mb(1));
 	defer mem.destroy_scratch(&scratch);
 
-	obj := json.parse(test_string, &scratch);
-	t := Test{};
-	if json.read_into(obj, &t, Test) {
-		println("Success: %", t);
-	}
-	else {
-		println("Failed!");
-	}
+	s := Stuff {
+		x = .{1.23, 4.54, 2.2002},
+		y = .{3, 2, 1},
+		z = "321s123",
+		w = .{
+			f = .{"foo", "bar"}
+		}
+	};
+
+	js := json.into_json(s, &scratch);
+	str := json.print(js, &scratch);
+	println("out: %", str);
+
+
+
+	//obj := json.parse(test_string, &scratch);
+	//t := Test{};
+	//if json.read_into(obj, &t, Test) {
+	//	println("Success: %", t);
+	//}
+	//else {
+	//	println("Failed!");
+	//}
 
 
     return 0;
