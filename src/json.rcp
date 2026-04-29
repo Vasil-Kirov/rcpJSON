@@ -43,6 +43,13 @@ enum Type {
     Null
 }
 
+make_null :: fn() -> Value {
+	v := Value {
+		t = Type.Null
+	};
+	return v;
+}
+
 make_string :: fn(str: string) -> Value {
 	v := Value {
 		t = Type.String
@@ -234,6 +241,7 @@ into_json_ :: fn(vp: *u8, t: *TypeInfo, alloc: *mem.Allocator) -> Value {
 		}
 		case _:
 		{
+			#assert false && "Invalid object passed.";
 		}
 	};
 	return .{};
