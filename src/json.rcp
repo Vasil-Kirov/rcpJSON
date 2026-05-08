@@ -136,9 +136,21 @@ read_into :: fn(v: Value, out: *, t: type) -> bool {
 		{
 			if ti.kind != .Struct
 				return false;
+
 			start: *u8 = out;
 			for i, it in v.v.object.val {
-				if !read_into(it.obj, start + get_struct_member_offset(ti.t.struct_, i), ti.t.struct_.members[i].t)
+				
+				member := StructMember {};
+				mem_i := -1;
+				for mem_i_, m in ti.t.struct_.members {
+					if m.name == it.name {
+						mem_i = mem_i_;
+					}
+				}
+				if mem_i == -1
+					return false;
+
+				if !read_into(it.obj, start + get_struct_member_offset(ti.t.struct_, mem_i), ti.t.struct_.members[i].t)
 					return false;
 			}
 		}
