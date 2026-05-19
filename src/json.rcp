@@ -201,6 +201,10 @@ read_into :: fn(v: Value, out: *, t: type) -> bool {
 #private
 into_json_ :: fn(vp: *u8, t: *TypeInfo, alloc: *mem.Allocator) -> Value {
 	switch t.kind {
+		case .Enum:
+		{
+			return into_json_(vp, type_info(t.t.enum_.t), alloc);
+		}
 		case .Basic:
 		{
 			switch t.t.basic.kind

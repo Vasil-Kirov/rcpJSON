@@ -25,22 +25,34 @@ struct Test {
 	},
 };
 
+enum X {
+	A = 10,
+	B = 20,
+}
+
 struct Stuff {
 	x: []f64,
-	y: [4]int,
+	y: [4]X,
 	z: string,
 	w: struct {
 		f: [2]string
 	}
 };
 
+bar :: fn(x: X) {
+}
+
 main :: fn() -> i32 {
+	f := [4]X{.A, .A, .B, .B};
+	println("size: % %", size_of X, size_of f);
+	println("f: %", f);
+
 	scratch := mem.create_scratch(mem.mb(1));
 	defer mem.destroy_scratch(&scratch);
 
 	s := Stuff {
 		x = .{1.23, 4.54, 2.2002},
-		y = .{3, 2, 1},
+		y = .{.A, .A, .B},
 		z = "321s123",
 		w = .{
 			f = .{"foo", "bar"}
